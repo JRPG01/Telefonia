@@ -7,12 +7,14 @@ import android.os.Build
 import android.telephony.PhoneStateListener
 import android.telephony.ServiceState
 import android.telephony.SignalStrength
+import android.telephony.SmsManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
+import com.example.respuestaautomaticas.ViewModel.ViewModelMensaje
 
 class BroadcastReciver: BroadcastReceiver() {
     private var mListener: ServiceStateListener? = null
@@ -25,6 +27,14 @@ class BroadcastReciver: BroadcastReceiver() {
 
         if (action == TelephonyManager.ACTION_PHONE_STATE_CHANGED) {
             mTelephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            // Extrae el numero que esta llamado
+            val ExtraerNumero = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
+            Log.d("Numero Entrante",ExtraerNumero+"")
+            // Envia el mensaje
+            if (ExtraerNumero != null) {
+                EnviarMensaje(ExtraerNumero)
+            }
+
             Toast.makeText(mContext, "¡Receptor registrado!", Toast.LENGTH_LONG).show()
             mListener = ServiceStateListener()
             mTelephonyManager?.listen(mListener, PhoneStateListener.LISTEN_SERVICE_STATE)
@@ -32,14 +42,21 @@ class BroadcastReciver: BroadcastReceiver() {
         }
         Log.d("Llamada detectada","Se detecto")
     }
+    private fun EnviarMensaje(numero: String) {
+        val smsMensaje = SmsManager.getDefault()
+        // Cambiar este mensaje por el que esta escrito en el viewmodel de la caja de texto
+        val mensaje = "Este es un mensaje de prueba para comprovar si funciona"
+        smsMensaje.sendTextMessage(numero,null,mensaje,null,null)
+        Log.d("Mensaje Enviado",smsMensaje.toString())
+    }
 
+    // Detecta si el telefono tiene señal
     private inner class ServiceStateListener : PhoneStateListener() {
         override fun onServiceStateChanged(serviceState: ServiceState) {
             super.onServiceStateChanged(serviceState)
             val connected = serviceState.state == ServiceState.STATE_IN_SERVICE
             if (connected) {
                 Toast.makeText(mContext, "¡Conexión establecida!", Toast.LENGTH_LONG).show()
-                // Aquí puedes manejar la lógica para reintentar los SMS
             } else {
                 Toast.makeText(mContext, "¡Conexión perdida!", Toast.LENGTH_LONG).show()
             }
