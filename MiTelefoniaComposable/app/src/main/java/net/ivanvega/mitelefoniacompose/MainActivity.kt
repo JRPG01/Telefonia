@@ -74,7 +74,7 @@ fun SystemBroadcastReceiver(
 fun HomeScreen() {
 
     SystemBroadcastReceiver(Telephony.Sms.Intents.SMS_RECEIVED_ACTION) { intent ->
-        var strMensaje = ""
+        var strMensaje = "HOLA"
         val isCharging = /* Get from batteryStatus ... */ true
         val bndSMS: Bundle? = intent?.getExtras()
         val pdus = bndSMS?.get("pdus") as Array<Any>?
